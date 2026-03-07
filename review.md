@@ -222,32 +222,3 @@ SKILL_REGISTRY = {
 хорошо документирован и безопасен. Основной вектор развития — переход от шаблонов
 к более интеллектуальному анализу (AST, семантика) и уменьшение дублирования
 через shared-компоненты.
-
-
-Рецензент - GPT 5.4
-Ниже именно ревью с упором на дефекты и риски. Тесты сейчас зеленые: python -m pytest -q проходит, но это скорее подтверждает, что набор тестов пока не ловит несколько важных проблем.
-
-code_reviewer массово дает ложные срабатывания, потому что ищет паттерны по сырым строкам, включая строковые литералы и собственные шаблоны. В результате он сам помечает свои же правила как eval/TODO/assert. Это подрывает доверие к ключевому скиллу. См. skill.py (line 27), skill.py (line 43), skill.py (line 63), skill.py (line 73). Я отдельно воспроизвел это на контенте, где есть только строки вроде "eval(" и "TODO": скилл все равно возвращает findings.
-
-test_generator сортирует цели в обратную сторону и поднимает наверх наименее полезные файлы. В ключе сортировки уже стоит -p.stat().st_size, а затем еще используется reverse=True, поэтому первыми идут более мелкие файлы вроде schema.py, а не более содержательные модули. Это видно и по реальному прогону на этом репо. См. skill.py (line 53).
-
-test_generator так же, как и code_reviewer, строит risk_notes по наивному substring matching, поэтому ловит ложные bare except, TODO/FIXME и даже pass внутри обычного текста. У меня _risk_notes() пометил строку "bypass auth" как наличие pass statement. См. skill.py (line 38), skill.py (line 44).
-
-Генерация имени output-файла ломает не-ASCII сценарии: любые кириллические --output-name схлопываются в output.md. В текущем окружении это особенно заметно. slugify("отчет"), slugify("тест") и slugify("арх-спек") все дают один и тот же результат. Это создает неожиданные коллизии и ложные FileExistsError. См. io.py (line 10).
-
-architecture_designer и figma_ui_architect выглядят как кастомные генераторы, но по сути отдают почти полностью захардкоженные шаблоны. У architecture_designer API surface, entities, risks и open questions не зависят от домена продукта, поэтому одинаковые эндпоинты /auth/session и /resources попадают и в payroll, и в chat app. См. architecture skill (line 14), architecture skill (line 121), figma skill (line 44), figma skill (line 50). Это не просто “generic output”, а риск вводить пользователя в заблуждение псевдо-специфичностью.
-
-doc_writer в секции top-level structure раскрывает hidden entries, хотя repo_analyzer по умолчанию их скрывает. То есть документация может засветить .git, .env и другие скрытые артефакты, даже когда основной анализ их исключает. См. skill.py (line 14), skill.py (line 49).
-
-Что улучшить в первую очередь:
-
-Перевести code_reviewer и test_generator с substring-эвристик на tokenize/AST хотя бы для Python, чтобы не срабатывать на строках, комментариях и markdown-шаблонах.
-Исправить ranking в test_generator и добавить scoring по “ценности для тестирования”: публичные функции, размер, сложность, количество веток, наличие I/O.
-Заменить ASCII-only slugify на Unicode-safe transliteration или хотя бы fallback с хешем исходной строки.
-Для architecture_designer и figma_ui_architect либо честно позиционировать их как boilerplate template generators, либо реально подмешивать входные требования в компоненты, endpoints, flows, states и open questions.
-Синхронизировать поведение doc_writer с repo_analyzer по hidden-файлам и исключениям.
-Расширить тесты негативными кейсами: false positives, Unicode output names, ranking target selection, hidden file leakage.
-Главный пробел в тестах: они почти везде проверяют “файл создался” и “секция присутствует”, но почти не проверяют качество и правдивость вывода. Именно поэтому текущие проблемы проходят suite без сопротивления.
-
-
-
