@@ -3,16 +3,29 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import hashlib
 from pathlib import Path
 import re
+import unicodedata
 
 
 def slugify(value: str) -> str:
     """Convert arbitrary text into a filesystem-safe ASCII slug."""
-    value = value.strip().lower()
-    value = re.sub(r"[^a-z0-9]+", "-", value)
-    value = re.sub(r"-{2,}", "-", value)
-    return value.strip("-") or "output"
+    original = value.strip()
+    if not original:
+        return "output"
+
+    normalized = unicodedata.normalize("NFKD", original).encode("ascii", "ignore").decode("ascii").lower()
+    normalized = re.sub(r"[^a-z0-9]+", "-", normalized)
+    normalized = re.sub(r"-{2,}", "-", normalized).strip("-")
+
+    contains_non_ascii = any(ord(char) > 127 for char in original)
+    if normalized and not contains_non_ascii:
+        return normalized
+
+    digest = hashlib.sha1(original.encode("utf-8")).hexdigest()[:8]
+    stem = normalized or "output"
+    return f"{stem}-{digest}"
 
 
 def utc_timestamp() -> str:

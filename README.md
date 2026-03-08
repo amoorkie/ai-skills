@@ -2,13 +2,15 @@
 
 Modular local toolkit for AI coding and product-design agents.
 
-This repository currently contains **Phase 1 + Phase 2**: foundational architecture, a production-style CLI, and eight practical skills.
+This repository now contains a production-style CLI, eight practical skills, built-in readiness benchmarks, and linked workflow chains for design and engineering use cases.
 
 ## Status
 - Runtime: Python 3.11+
 - Packaging: installable via `pyproject.toml`
 - Test suite: `pytest`
 - Output safety: no silent overwrite
+- Readiness: built-in eval suites for every major skill
+- Workflows: linked `design-chain`, `engineering-chain`, and `full-suite` commands
 
 ## Implemented Skills
 - `repo_analyzer`: inspect local repositories and produce structured scan reports
@@ -19,6 +21,20 @@ This repository currently contains **Phase 1 + Phase 2**: foundational architect
 - `test_generator`: generate actionable pytest test plans from local source inspection
 - `code_reviewer`: run heuristic static code review and produce prioritized findings
 - `deploy_helper`: generate platform-aware deployment plans and checklists
+
+## Readiness and Workflow Commands
+```bash
+python -m ai_skills_toolkit benchmark-all --output-name toolkit-readiness --overwrite
+python -m ai_skills_toolkit design-chain --repo-path . --product-name "Ops Console" --product-goal "Help operators review workflows safely." --jtbd "When reviewing queue health, I want actionable status so I can resolve issues quickly." --output-name design-pack --overwrite
+python -m ai_skills_toolkit engineering-chain --repo-path . --test-focus-path src/ai_skills_toolkit/cli.py --output-name engineering-pack --overwrite
+python -m ai_skills_toolkit full-suite --repo-path . --product-name "Ops Console" --product-goal "Help operators review workflows safely." --jtbd "When reviewing queue health, I want actionable status so I can resolve issues quickly." --test-focus-path src/ai_skills_toolkit/cli.py --output-name release-pack --overwrite
+```
+
+## Workflow Catalog
+- `benchmark-all`: run the built-in eval corpus for all core skills and generate a readiness report.
+- `design-chain`: run `repo_analyzer -> architecture_designer -> figma_ui_architect` as one linked design/handoff workflow.
+- `engineering-chain`: run `repo_analyzer -> code_reviewer -> test_generator -> doc_writer` as one linked engineering workflow.
+- `full-suite`: run readiness plus both linked chains and generate a release-pack report.
 
 ## Quick Start
 ```bash
@@ -51,10 +67,17 @@ python -m ai_skills_toolkit code-reviewer --repo-path . --max-findings 40
 python -m ai_skills_toolkit deploy-helper --repo-path . --platform auto --app-name "ai-skills-toolkit"
 ```
 
+## Context-Aware Design Commands
+```bash
+python -m ai_skills_toolkit architecture-designer --product-name "Ops Portal" --product-goal "Provide operational visibility for platform teams." --repo-context-repo-path .
+python -m ai_skills_toolkit figma-ui-architect --product-name "Ops Console" --product-goal "Help operators review workflows and integrations safely." --repo-context-repo-path . --architecture-context-repo-path
+```
+
 ## Output Contract
 - All artifacts are written under `generated/<skill_name>/`.
 - Existing files are never overwritten unless `--overwrite` is explicitly passed.
 - Default output names are timestamped in CLI for safer repeated local runs.
+- Workflow commands also produce summary artifacts that link to all downstream reports.
 
 ## Practical End-to-End Example
 1. Analyze a repository:
@@ -121,13 +144,15 @@ print(result.output_path)
 - Install dev dependencies: `pip install -e ".[dev]"`
 - Run tests: `python -m pytest`
 - Entry point: `python -m ai_skills_toolkit`
+- Run readiness suite: `python -m ai_skills_toolkit benchmark-all --output-name toolkit-readiness --overwrite`
+- Run release pack: `python -m ai_skills_toolkit full-suite --repo-path . --product-name "Ops Console" --product-goal "Help operators review workflows safely." --jtbd "When reviewing queue health, I want actionable status so I can resolve issues quickly." --test-focus-path src/ai_skills_toolkit/cli.py --output-name release-pack --overwrite`
 
 ## Limitations (Current)
-- Outputs are template/heuristic-driven and deterministic (no runtime LLM orchestration in this phase).
-- `repo_analyzer` is file-structure oriented, not deep AST/semantic analysis.
-- Architecture/UI specs are strong starting points, not final implementation/handoff documents.
+- Outputs are heuristic-driven and deterministic; they do not replace human product, design, or release approval.
+- Cross-skill chains improve context flow, but they are still bounded by local source heuristics rather than live production telemetry.
+- Architecture/UI specs are stronger handoff artifacts now, but they still need validation against the actual implementation plan.
 
 ## Roadmap
-- Add additional skills beyond phase 2
-- Add richer static analysis for repository understanding
+- Add additional workflow packs beyond the current design and engineering chains
+- Deepen repository understanding with richer ownership and boundary analysis
 - Add pluggable rendering and export formats

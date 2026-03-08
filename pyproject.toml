@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ai-skills-toolkit"
-version = "0.2.0"
-description = "Modular local skills toolkit for AI coding/design agents (phase 2)."
+version = "0.3.0"
+description = "Modular local skills toolkit for AI coding/design agents with readiness benchmarks and workflow chains."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
