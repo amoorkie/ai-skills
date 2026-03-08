@@ -1,0 +1,4 @@
+interface:
+  display_name: "Engineering Chain"
+  short_description: "Run linked repository, review, test-plan, and documentation workflow"
+  default_prompt: "Run the Engineering Chain skill on this repository and summarize the top engineering risks and follow-up actions."

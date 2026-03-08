@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Chain"
+  short_description: "Run linked repository, architecture, and UI handoff workflow"
+  default_prompt: "Run the Design Chain skill for this repository and summarize the architecture and UI handoff priorities."

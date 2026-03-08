@@ -1,0 +1,4 @@
+interface:
+  display_name: "Full Suite"
+  short_description: "Run readiness plus design and engineering workflow chains"
+  default_prompt: "Run the Full Suite skill for this repository and summarize the release-pack outputs."

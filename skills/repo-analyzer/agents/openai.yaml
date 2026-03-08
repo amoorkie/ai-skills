@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo Analyzer"
+  short_description: "Run ai-skills-toolkit repository analysis on a local repository"
+  default_prompt: "Analyze this repository with the Repo Analyzer skill and summarize the most important runtime and structure signals."
