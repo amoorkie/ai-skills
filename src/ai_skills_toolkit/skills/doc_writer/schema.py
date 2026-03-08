@@ -6,6 +6,8 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field, field_validator
 
+from ai_skills_toolkit.core.validators import validate_repo_dir
+
 
 class DocWriterInput(BaseModel):
     repo_path: Path = Field(default=Path("."), description="Path to local repository.")
@@ -17,10 +19,4 @@ class DocWriterInput(BaseModel):
     @field_validator("repo_path")
     @classmethod
     def validate_repo_path(cls, value: Path) -> Path:
-        resolved = value.resolve()
-        if not resolved.exists():
-            raise ValueError(f"Path does not exist: {resolved}")
-        if not resolved.is_dir():
-            raise ValueError(f"Path is not a directory: {resolved}")
-        return resolved
-
+        return validate_repo_dir(value)

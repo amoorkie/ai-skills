@@ -7,6 +7,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
+from ai_skills_toolkit.core.validators import validate_repo_dir
+
 
 class TestGeneratorInput(BaseModel):
     """Input contract for generating a repository test plan."""
@@ -20,21 +22,21 @@ class TestGeneratorInput(BaseModel):
     @field_validator("repo_path")
     @classmethod
     def validate_repo_path(cls, value: Path) -> Path:
-        resolved = value.resolve()
-        if not resolved.exists():
-            raise ValueError(f"Path does not exist: {resolved}")
-        if not resolved.is_dir():
-            raise ValueError(f"Path is not a directory: {resolved}")
-        return resolved
+        return validate_repo_dir(value)
 
 
 class TestTarget(BaseModel):
     """Discovered code unit that should receive tests."""
 
     path: str
+    target_type: str = "module"
     functions: list[str] = Field(default_factory=list)
     classes: list[str] = Field(default_factory=list)
+    priority_score: int = 0
+    priority_reasons: list[str] = Field(default_factory=list)
     risk_notes: list[str] = Field(default_factory=list)
+    test_ideas: list[str] = Field(default_factory=list)
+    suggested_test_types: list[str] = Field(default_factory=list)
 
 
 class TestGenerationResult(BaseModel):
@@ -44,4 +46,3 @@ class TestGenerationResult(BaseModel):
     framework: str
     targets: list[TestTarget]
     notes: list[str] = Field(default_factory=list)
-
